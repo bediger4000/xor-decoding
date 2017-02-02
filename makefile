@@ -26,5 +26,15 @@ puzzling.dat: intermediate2.php
 keysize: keysize.c
 	$(CC) $(CFLAGS) -o keysize keysize.c
 
+findkeys: findkeys.c php_vector.h base64_vector.h xencode_vector.h chars_array.h chars_array.o
+	$(CC) $(CFLAGS) -o findkeys findkeys.c chars_array.o
+
+chars_array.o:chars_array.c chars_array.h
+	$(CC) $(CFLAGS) -c chars_array.c
+
+xor: xor.c
+	$(CC) $(CFLAGS) -o xor xor.c
+
 clean:
 	-rm -rf puzzling.php puzzling.dat intermediate1.php intermediate2.php keysize
+	-rm -rf xor findkeys chars_array.o
