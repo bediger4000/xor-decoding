@@ -3,11 +3,12 @@
 
 ## Finding key size
 
+[Hamming Distance](https://en.wikipedia.org/wiki/Hamming_distance)
+
     $ make keysize
     $ ./keysize ciphertextfilename > dat
 
 ## Payload
-
 
     <?php
     for (
