@@ -1,0 +1,74 @@
+<Wed Aug 28 04:02:06 2013> 150.244.56.224:61918 - Windows Vista SP0/SP2, 7 SP0+, 2008 SP0 -> 10.0.0.3:80 (distance 16, link: ethernet/modem)
+<Wed Aug 28 04:04:33 2013> 91.144.56.96:58894 - FreeBSD 9.x (firewall!) (up: 1691 hrs) -> 10.0.0.3:80 (distance 14, link: ethernet/modem)
+<Wed Aug 28 04:04:39 2013> 91.144.56.96:58917 - FreeBSD 9.x (firewall!) (up: 1691 hrs) -> 10.0.0.3:80 (distance 14, link: ethernet/modem)
+<Wed Aug 28 04:05:52 2013> 95.211.231.143:49129 - FreeBSD 7.x, 8.x (up: 1017 hrs) -> 10.0.0.3:80 (distance 11, link: ethernet/modem)
+<Wed Aug 28 04:05:57 2013> 115.111.223.51:43231 - Linux 2.6 (tstamp-) [priority1] -> 10.0.0.3:80 (distance 13, link: ethernet/modem)
+
+_SERVER
+Array
+(
+    [UNIQUE_ID] => Uh3LiAoAAAMAAAEbNe0AAAAH
+    [SCRIPT_URL] => /wp-content/plugins/wp_config/mod_system.php
+    [SCRIPT_URI] => http://stratigery.com/wp-content/plugins/wp_config/mod_system.php
+    [HTTP_HOST] => stratigery.com
+    [HTTP_ACCEPT] => */*
+    [CONTENT_LENGTH] => 15000
+    [HTTP_EXPECT] => 100-continue
+    [CONTENT_TYPE] => multipart/form-data; boundary=----------------------------18ba02a70b08
+    [PATH] => /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
+    [SERVER_SIGNATURE] => 
+    [SERVER_SOFTWARE] => Apache
+    [SERVER_NAME] => stratigery.com
+    [SERVER_ADDR] => 10.0.0.3
+    [SERVER_PORT] => 80
+    [REMOTE_ADDR] => 95.211.231.143
+    [DOCUMENT_ROOT] => /srv/http/stratigery/htdocs
+    [SERVER_ADMIN] => bediger@stratigery.com
+    [SCRIPT_FILENAME] => /srv/http/stratigery/htdocs/blog3/wp-content/pseudo_wso.php
+    [REMOTE_PORT] => 49129
+    [GATEWAY_INTERFACE] => CGI/1.1
+    [SERVER_PROTOCOL] => HTTP/1.1
+    [REQUEST_METHOD] => POST
+    [QUERY_STRING] => 
+    [REQUEST_URI] => /wp-content/plugins/wp_config/mod_system.php
+    [SCRIPT_NAME] => /wp-content/plugins/wp_config/mod_system.php
+    [PHP_SELF] => /wp-content/plugins/wp_config/mod_system.php
+    [REQUEST_TIME_FLOAT] => 1377684360.34
+    [REQUEST_TIME] => 1377684360
+)
+
+_REQUEST
+Array
+(
+    [pass] => 4500045
+    [a] => FilesMAn
+    [c] => ./
+    [p1] => uploadFile
+    [charset] => Windows-1251
+)
+
+_COOKIE
+ Array
+(
+)
+
+_FILES
+ 
+UPLOADED FILE f
+ Array
+(
+    [name] => ku.php
+    [type] => application/octet-stream
+    [tmp_name] => /tmp/phpEcYosI
+    [error] => 0
+    [size] => 14304
+)
+
+END UPLOADED FILE f
+ 
+END _FILES
+ my_uri = /wp-content/plugins/wp_config/mod_system.php
+blog_path = /wp-content/plugins/wp_config
+my_blog = http://stratigery.com/wp-content/plugins/wp_config
+Set cookie d8670190bc460b6abebf276d20db5892=7e9424bfa12d1f2ad32463ac1a80e407
+WSO login cookie is set. Sending WSO main page.
