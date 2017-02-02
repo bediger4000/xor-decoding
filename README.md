@@ -1,6 +1,11 @@
 # xor-decoding
 ## Decoding Exclusive-or encoded malware payloads
 
+## Finding key size
+
+    $ make keysize
+    $ ./keysize ciphertextfilename > dat
+
 ## Payload
 
 
