@@ -7,22 +7,36 @@
 #include <unistd.h>
 #include <ctype.h>
 
+/* Byte-wise XOR decoding of an in-memory copy of a file. */
+
 int
 main(int ac, char **av)
 {
-	char *filename = av[1];
-	char *keystring = av[2];
+	char *filename;
+	char *keystring;
 	struct stat sb;
 	unsigned char *ciphertext_buffer;
 	size_t cc, ciphertext_size;
 	FILE *fin;
-	int keylen = strlen(keystring);
+	int keylen;
+
+	if (ac < 3)
+	{
+		fprintf(stderr, "xor - decode xor-encoded files, where key is a text string\n");
+		fprintf(stderr, "Usage: xor <filename> <keystring>\n");
+		fprintf(stderr, "Decoded output on stdout\n");
+		exit(1);
+	}
+
+	filename = av[1];
+	keystring = av[2];
+	keylen = strlen(keystring);
 
 	if (-1 == stat(filename, &sb))
 	{
 		fprintf(stderr, "Could not stat \"%s\": %s\n",
 			filename, strerror(errno));
-		exit(1);
+		exit(2);
 	}
 
 	ciphertext_size = sb.st_size;
@@ -31,7 +45,7 @@ main(int ac, char **av)
 	{
 		fprintf(stderr, "Could not fopen(%s) for read: %s\n",
 			filename, strerror(errno));
-		exit(2);
+		exit(3);
 	}
 
 	ciphertext_buffer = malloc(ciphertext_size);
@@ -42,7 +56,7 @@ main(int ac, char **av)
 			cc, ciphertext_size
 		);
 
-		exit(3);
+		exit(4);
 	}
 
 	fprintf(stderr, "Read all %lu bytes of cipher text from \"%s\"\n",
