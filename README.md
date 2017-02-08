@@ -3,20 +3,22 @@
 
 During the summoer of 2014, I [wrote and ran](http://stratigery.com/phparasites/)
 a honey pot that emulated a poorly maintained WordPress 2.9 installation. I ended up
-including a simulated ["WSO" web shell}(https://github.com/bediger4000/malware-phylogeny)
+including a simulated ["WSO" web shell](https://github.com/bediger4000/malware-phylogeny)
 as part of the honey pot, because attackers included WSO web shells in so many of
 their fake WordPress plugins. I had a two phase honey pot: first phase simulated
 WordPress, the second phase simulated WSO.
 
-Attackers use WSO as a file uploader as much as they use it for anything else. I find
-this puzzling, as WSO includes so much more functionality, but I'm not a bottom feeding
-WordPress cracker. Attackers uploaded many pieces of malware using the honey pot's
+Attackers use WSO as a file uploader more than they use it for anything else. I find
+this puzzling, as WSO includes so much more functionality. I'm not a bottom feeding
+WordPress cracker, but it would make more sense to have a smaller-size file uploader
+to me. Attackers uploaded many pieces of malware using the honey pot's
 simulated WSO web shell. One of these uploads occurred Wed Aug 28 04:05:52 2013 MDT.
 The simulated WSO web shell kept a log of its environment, PHP "superglobal" values,
 HTTP cookie values and many other things. The simulated web shell also allows file
 uploads by emulating WSO's `uploadFile` command, part of the `FilesMan` "action".
 
 The attacker, from 95.211.231.143 at the time, uploaded a file named "ku.php".
+Unfortunately, no attacker tried to GET or POST to a "ku.php" URL.
 
 I've included the simulated WSO web shell's logged data as file
 [95.211.231.143Uh3LiAoAAAMAAAEbNe0AAAAH.mod_system.scans](https://github.com/bediger4000/xor-decoding/blob/master/95.211.231.143Uh3LiAoAAAMAAAEbNe0AAAAH.mod_system.scans)
@@ -93,7 +95,19 @@ would be bitwise exclusively or-ed with the decoded bytes.
         return $d;
     }
 
+Unfortunately, no attacker ever tried to access the "ku.php" code, so I did not
+have the text string key.
+
 ## Getting the xor-encoded payload
+
+1. Extract the 12,941 character payload, which comprises the last line of file `95.211.231.143Uh3LiAoAAAMAAAEbNe0AAAAHfile`.
+2. Change `eval($d)` call to `print($d);` in that last line. This gives us the first intermediate code.
+3. Execute the first intermediate code.
+4. Delete some lines in the output of the first intermediate code that pertain to finding the key string, and again change `eval(` to `print(`. That gives us the second intermediate code.
+5. Execute the second intermediate code, whose output is the XOR-encoded mystery payload.
+
+Executing `make puzzling.dat` does those 5 steps, with the XOR-encoded mystery paylod ending up in file `puzzling.dat`
+The file `makefile` documents how to do all those steps with a Linux shell.
 
 ## Finding key size
 
