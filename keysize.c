@@ -23,7 +23,7 @@ main(int ac, char **av)
 
 	if (ac < 2)
 	{
-		fprintf(stderr, "keysize: estimate probability of key lengths using Hamming Distance\n");
+		fprintf(stderr, "keysize: estimate key length(s) using Hamming Distance\n");
 		fprintf(stderr, "Usage: keysize <filename>\n");
 		exit(1);
 	}
@@ -97,16 +97,12 @@ hamming_dist(unsigned char *s1, unsigned char *s2, int len)
 
 	for (int i = 0; i < len; ++i)
 	{
-		char byte1 = s1[i];
-		char byte2 = s2[i];
+		char val = s1[i] ^ s2[i];
 
-		for (int j = 0; j < 8; ++j)
+		while (val)
 		{
-			char bit1 = (char)(byte1 & bitmask[j]);
-			char bit2 = (char)(byte2 & bitmask[j]);
-
-			// if (bit1 != bit2) ++dist;
-			dist += (bit1 != bit2);
+			++dist;
+			val &= val - 1;
 		}
 	}
 
