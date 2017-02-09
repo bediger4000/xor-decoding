@@ -86,10 +86,7 @@ main(int ac, char **av)
 
 /* Bit-wise Hamming Distance from string s1 to string s2, both of which
  * have length in bytes of len, and not necessarily null-terminated.
- *
- * len and key length typically numerically equal.
  */
-char bitmask[] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80};
 int
 hamming_dist(unsigned char *s1, unsigned char *s2, int len)
 {
