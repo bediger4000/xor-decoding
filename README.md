@@ -111,7 +111,17 @@ The file `makefile` documents how to do all those steps with a Linux shell.
 
 ## Finding key size
 
-[Hamming Distance](https://en.wikipedia.org/wiki/Hamming_distance)
+The program `keysize` finds likely key length(s) by calculating
+[Hamming Distance](https://en.wikipedia.org/wiki/Hamming_distance) of blocks of bytes in
+xor-encoded ciphertext. That is, `keysize` iterates through possible key lengths, from 2 to 30
+characters. It calculates the Hamming Distance, the number of bits that differ, between the
+first chunk of bytes of key length, and every other key length-sized block of bytes in
+the ciphertext. `keysize` normalizes the Hamming Distance by dividing by the number
+of bytes it compared. Since ciphertext is rarely a multiple of key length, different key
+lengths will have different unused chunks of bytes at the end of the file.
+
+Theoretically, the possible key length that causes the smallest Normalized Hamming Distance
+should be the correct key length.
 
     $ make keysize
     $ ./keysize ciphertextfilename > dat
