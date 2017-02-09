@@ -208,6 +208,7 @@ find_likely_keys(char *ciphertext_buffer, int ciphertext_size)
 	int vector[256];
 	int non_printable_limit = ciphertext_size*allowable_non_printable_percent/100 + 1;
 
+	// This leaves out tabs, newlines, carriage returns as key byte values.
 	for (unsigned int keybyte = 0x20; keybyte < 0x7f; ++keybyte)
 	{
 		if (!isalnum(keybyte)) continue;
@@ -218,7 +219,7 @@ find_likely_keys(char *ciphertext_buffer, int ciphertext_size)
 		for (int i = 0; i < ciphertext_size; ++i)
 		{
 			unsigned char plaintext_byte = keybyte ^ ciphertext_buffer[i];
-			if (!isprint(plaintext_byte)) ++not_printable_count;
+			if (!isprint(plaintext_byte) && !isspace(plaintext_byte)) ++not_printable_count;
 			++vector[(int)plaintext_byte];
 		}
 
