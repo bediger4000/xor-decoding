@@ -19,6 +19,7 @@ intermediate2.php: intermediate1.php
 	php intermediate1.php | sed 's/if(!@isset(._SERVER)).*eval(.d);//' >> intermediate2.php
 	echo 'print($$d);' >> intermediate2.php
 
+# puzzling.dat should have the xor-encoded payload in it.
 puzzling.dat: intermediate2.php
 	php intermediate2.php > puzzling.dat
 
