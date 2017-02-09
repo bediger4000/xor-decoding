@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <string.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -27,6 +26,7 @@ double iterate_keystrings(
 	char *keystring_out
 );
 char *escape_chars(char *string, char *buffer);
+void usage(char *progname);
 
 double *basis_vector;
 double basis_vector_magnitude;
@@ -80,6 +80,8 @@ main(int ac, char **av)
 
 	if (!filename)
 		filename = av[optind];
+
+	if (!filename) usage(av[0]);
 
 	ciphertext_buffer = fill_buffer(filename, &ciphertext_size);
 
@@ -406,4 +408,21 @@ escape_chars(char *string, char *buffer)
 	*d = '\0';
 
 	return buffer;
+}
+
+void
+usage(char *progname)
+{
+	fprintf(stderr, "%s: make best guess at key of xor-encoded ciphertext\n", progname);
+	fprintf(stderr, "usage: %s [-b|-p|-x] -i inputfilename [-j <number>] -N <maxkeylength> -n <minkeylenght>\n", progname);
+	fprintf(stderr, "Flags:\n"
+					"-b  base64 encoding basis vector\n"
+					"-p  PHP source code basis vector (default)\n"
+					"-x  PHP '\\xnm' string rep basis vector\n"
+					"-i <inputfilename> specify the file name of xor-encoded ciphertext, no default\n"
+					"-j <number> allow <number> percent of non-printing characters when guessing key, default zero\n"
+					"-n <number> specify minimum key length to consider, default 2\n"
+					"-N <number> specify maximum key length to consider, default 30\n"
+	);
+	exit(0);
 }
