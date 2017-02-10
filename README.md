@@ -1,6 +1,14 @@
 # xor-decoding
 ## Decoding Exclusive-or encoded malware payloads
 
+[Similar or better tool](https://github.com/hellman/xortool)
+
+[Same malware analysis in French](https://nyx.cx/analyse-dune-backdoor-php.html)
+
+[Another analysis](https://blog.sucuri.net/2013/12/how-we-decoded-some-nasty-multi-level-encoded-malware.html)
+
+[Different malware, same encoding and key](http://pastebin.com/1XE208s6)
+
 During the summoer of 2014, I [wrote and ran](http://stratigery.com/phparasites/)
 a honey pot that emulated a poorly maintained WordPress 2.9 installation. I ended up
 including a simulated ["WSO" web shell](https://github.com/bediger4000/malware-phylogeny)
