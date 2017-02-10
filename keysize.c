@@ -68,17 +68,17 @@ main(int ac, char **av)
 	for (int keysize = MIN_KEY_LENGTH; keysize < MAX_KEY_LENGTH; ++keysize)
 	{
 		double sum_hamming_distances = 0.0;
-		int number_comparisons = 0;
+		int number_of_blocks = 0;
 
 		int limit = ciphertext_size - keysize;
 
 		/* This loop walks the buffer in keysize chunks. For each chunk after the
 		 * first keysize bytes, calculate the Hamming Distance from the first
 		 * keysize bytes in file to the next keysize bytes.  */
-		for (int i = keysize; i < limit; i += keysize, ++number_comparisons)
+		for (int i = keysize; i < limit; i += keysize, ++number_of_blocks)
 			sum_hamming_distances += hamming_dist(ciphertext_buffer, &ciphertext_buffer[i], keysize);
 
-		printf("%d\t%.0f\t%.4f\n", keysize, sum_hamming_distances, sum_hamming_distances/(double)(keysize*number_comparisons));
+		printf("%d\t%.0f\t%d\t%.4f\n", keysize, sum_hamming_distances, keysize*number_of_blocks, sum_hamming_distances/(double)(keysize*number_of_blocks));
 	}
 
 	return 0;
