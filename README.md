@@ -124,12 +124,38 @@ The program `keysize` finds likely key length(s) by calculating
 xor-encoded ciphertext. That is, `keysize` iterates through possible key lengths, from 2 to 30
 characters. It calculates the Hamming Distance, the number of bits that differ, between the
 first chunk of bytes of key length, and every other key length-sized block of bytes in
-the ciphertext. `keysize` normalizes the Hamming Distance by dividing by the number
+the ciphertext. For example, if we use 9 bytes as possible key length, `keysize` compares
+the block of bytes offsets 0-8, with blocks of bytes at offsets 9-17, 18-26, 27-35, ...
+
+`keysize` normalizes the Hamming Distance by dividing by the number
 of bytes it compared. Since ciphertext is rarely a multiple of key length, different key
 lengths will have different unused chunks of bytes at the end of the file.
 
-Theoretically, the possible key length that causes the smallest Normalized Hamming Distance
-should be the correct key length.
+The key length that causes the smallest Normalized Hamming Distance
+should be the key length. Apparently, this happens because characters do not appear
+uniformly throughout any cleartext. 'E' occurs more than 'Q' in English language text.
+A particular byte is more likely to occur at a given offset inside key length blocks
+of bytes. Since cleartext bytes at the same offset inside key length sized blocks of bytes
+get exclusive-or'ed with the same key byte, a slightly smaller Hamming Distance gets
+calculated for the real key length.
+
+The key length calculations aren't very demanding:
 
     $ make keysize
-    $ ./keysize ciphertextfilename > dat
+    $ ./keysize puzzling.dat > dat
+
+![Hamming Distance vs Key Length](https://raw.githubusercontent.com/bediger4000/xor-decoding/master/key_length.png)
+
+The above graph shows the result of running `keysize` over the xor-encoded
+ciphertext in `puzzling.dat`.  The graph shows 3 outlier values for key length,
+8, 12, and 24 bytes.
+
+
+## Finding the key
+
+	$ make findkeys
+	$ ./findkeys -j 5 -n 8 -N 24 -i puzzling.dat
+
+Program `findkeys` guesses possible keys by putting the ciphertext into _keysize_ buffers,
+where the Nth ciphertext byte goes into buffer N%keylength. Assuming a particular
+key length, all bytes that got xor-ed with key byte M end up in buffer M.
