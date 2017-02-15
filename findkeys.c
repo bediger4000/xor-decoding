@@ -189,8 +189,13 @@ find_key(unsigned char *ciphertext_buffer, size_t ciphertext_size, int keylength
 	return best_angle;
 }
 
+/* Find likely key bytes for a buffer full of characters xored
+ * with the same key byte. cipherbytes_bucket is an array of
+ * all the ciphertext bytes that have the same key position in
+ * the original ciphertext.
+ */
 char *
-find_likely_keys(char *ciphertext_buffer, int ciphertext_size)
+find_likely_keys(char *cipherbytes_bucket, int bucket_size)
 {
 	struct {
 		unsigned char byte;
@@ -206,28 +211,34 @@ find_likely_keys(char *ciphertext_buffer, int ciphertext_size)
 	best_bytes[2].angle = 12.0;
 
 	int vector[256];
-	int non_printable_limit = ciphertext_size*allowable_non_printable_percent/100 + 1;
+	int non_printable_limit = bucket_size*allowable_non_printable_percent/100 + 1;
 
-	// This leaves out tabs, newlines, carriage returns as key byte values.
-	for (unsigned int keybyte = 0x20; keybyte < 0x7f; ++keybyte)
+	// Create a vector of counts of each character that appear in
+	// the possible plaintext produced by xoring value in keybyte
+	// with each byte in cipherbytes_bucket.
+	for (unsigned int keybyte = 0x20; keybyte <= 0x7f; ++keybyte)
 	{
-		if (!isalnum(keybyte)) continue;
-
 		for (int i = 0; i < 256; ++i) vector[i] = 0;
 		int not_printable_count = 0;
 
-		for (int i = 0; i < ciphertext_size; ++i)
+		for (int i = 0; i < bucket_size; ++i)
 		{
-			unsigned char plaintext_byte = keybyte ^ ciphertext_buffer[i];
+			unsigned char plaintext_byte = keybyte ^ cipherbytes_bucket[i];
 			if (!isprint(plaintext_byte) && !isspace(plaintext_byte)) ++not_printable_count;
 			++vector[(int)plaintext_byte];
 		}
 
 		if (not_printable_count > non_printable_limit) continue;
 
+		// vector[] contains count or maybe histogram of the possible plaintext
+		// bytes created by xoring the ciphertext bytes with some possible key byte.
+		// Find the "angle" in 256-space that occurs between vector[] and the pre-selected
+		// "basis vector". The smaller this angle measures, the more likely we found
+		// the correct key byte.
+
 		double angle = vector_angle(vector);
-		// Singe all components of both vectors are positive, all we
-		// really want to look for is the smallest angle(s).
+		// Since vectors have all positive components, we
+		// look for is the smallest angle(s).
 
 		double tmp_angle;
 		char tmp_byte;
