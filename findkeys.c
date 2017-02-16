@@ -15,7 +15,7 @@
 
 void find_keys(unsigned char *ciphertext_buffer, size_t ciphertext_size, int min_key_length, int max_key_length);
 double find_key(unsigned char *ciphertext_buffer, size_t ciphertext_size, int keylength);
-char *find_likely_keys(char *ciphertext_buffer, int ciphertext_size);
+char *find_likely_key_bytes(char *ciphertext_buffer, int ciphertext_size);
 double vector_angle(int vector[256]);
 unsigned char *fill_buffer(char *filename, size_t *size_out);
 double iterate_keystrings(
@@ -28,8 +28,10 @@ double iterate_keystrings(
 char *escape_chars(char *string, char *buffer);
 void usage(char *progname);
 
+/* Basis vector, used in vector_angle() */
 double *basis_vector;
 double basis_vector_magnitude;
+
 int allowable_non_printable_percent = 0;
 
 int
@@ -131,29 +133,49 @@ find_key(unsigned char *ciphertext_buffer, size_t ciphertext_size, int keylength
 	}
 
 	// Now we have keylength number of arrays of bytes: byte_buckets[]
-	// Each byte_bucket[n] has bucket_count[n] bytes in it.
+	// Each byte_bucket[n] has bucket_count[n] bytes in it.  All of those
+	// bytes are xored with the same key byte, if keylength is correct.
 	char **keystrings = calloc(sizeof(char *)*keylength, 1);
 
 	for (int i = 0; i < keylength; ++i)
-		keystrings[i] = find_likely_keys(byte_buckets[i], bucket_count[i]);
+		keystrings[i] = find_likely_key_bytes(byte_buckets[i], bucket_count[i]);
+
+	/* keystrings[] will have length keylength. keystrings[N] points to
+	 * an array of up to 3 "best" key bytes for each bucket of ciphertext bytes. */
 
 	char *first_best_keystring = calloc(keylength + 1, 1);
 	for (int i = 0; i < keylength; ++i)
 		first_best_keystring[i] = keystrings[i][0];
 	first_best_keystring[keylength] = '\0';
 
+	/* first_best_keystring should have a key string composed of the
+	 * individual bytes that bets decode each buket of ciphertext bytes.
+	 * It's probably, but not always, the actual key, if the key really
+	 * has keylength bytes in it. */
+
 	char escaped_string[1024];
 
 	if (first_best_keystring[0])
 		printf("Key length %d, first best key string \"%s\"\n", keylength, escape_chars(first_best_keystring, escaped_string));
 
-	if (strlen(keystrings[0]) > 0)
+	/* keystrings[] points to arrays of up to 3 bytes that at least
+	 * sort of decode to plaintext. See if we should check all those possibilities. */
+	int N = 0;
+	for (int i = 0; i < keylength; ++i)
+		N += strlen(keystrings[i]);
+
+	if (N > 0)
 	{
 		char *best_keystring = calloc(keylength + 1, 1);
-		best_angle = iterate_keystrings(ciphertext_buffer, ciphertext_size, keystrings, keylength, best_keystring);
-
-		printf("Key length %d, best key string \"%s\"\n",
+		best_angle = iterate_keystrings(
+			ciphertext_buffer,
+			ciphertext_size,
+			keystrings,
 			keylength,
+			best_keystring
+		);
+
+		printf("	another possible key string \"%s\"\n",
 			escape_chars(best_keystring, escaped_string)
 		);
 		fflush(stdout);
@@ -161,7 +183,7 @@ find_key(unsigned char *ciphertext_buffer, size_t ciphertext_size, int keylength
 		free(best_keystring);
 		best_keystring = NULL;
 	} else {
-		printf("Key length %d, no good key string\n", keylength);
+		printf("Key length %d, no good key string with less than %d%% problme characters\n", keylength, allowable_non_printable_percent);
 	}
 
 	free(first_best_keystring);
@@ -193,10 +215,14 @@ find_key(unsigned char *ciphertext_buffer, size_t ciphertext_size, int keylength
  * with the same key byte. cipherbytes_bucket is an array of
  * all the ciphertext bytes that have the same key position in
  * the original ciphertext.
+ *
+ * Returns a 3-element array of bytes, with up to the "best" 3
+ * potential key bytes in it. You have to free the returned pointer.
  */
 char *
-find_likely_keys(char *cipherbytes_bucket, int bucket_size)
+find_likely_key_bytes(char *cipherbytes_bucket, int bucket_size)
 {
+	/* "Best" 3 key bytes kept in byest_bytes[], sorted. */
 	struct {
 		unsigned char byte;
 		double angle;
@@ -268,6 +294,7 @@ find_likely_keys(char *cipherbytes_bucket, int bucket_size)
 		}
 	}
 
+	/* Put all of the best bytes into a small array, and return it. */
 	char *keybytes = calloc(4, 1);
 	int byteidx = 0;
 	for (int i = 0; i < 3; ++i)
@@ -280,6 +307,13 @@ find_likely_keys(char *cipherbytes_bucket, int bucket_size)
 	return keybytes;
 }
 
+/*
+ * Based on pre-selected basis vector, calculate an "angle" between
+ * the 256-dimensional vector[] (histogram of cleartext characters) and
+ * a 256-dimensional basis vector. The size of the "angle" between the
+ * two vectors gives a measure of how close the vector[] lies to a histogram
+ * of characters from a known "type" of text.
+ */
 double
 vector_angle(int vector[256])
 {
