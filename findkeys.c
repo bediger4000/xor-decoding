@@ -14,11 +14,11 @@
 #include <chars_array.h>
 
 void find_keys(unsigned char *ciphertext_buffer, size_t ciphertext_size, int min_key_length, int max_key_length);
-double find_key(unsigned char *ciphertext_buffer, size_t ciphertext_size, int keylength);
+void find_key(unsigned char *ciphertext_buffer, size_t ciphertext_size, int keylength);
 char *find_likely_key_bytes(char *ciphertext_buffer, int ciphertext_size);
 double vector_angle(int vector[256]);
 unsigned char *fill_buffer(char *filename, size_t *size_out);
-double iterate_keystrings(
+void iterate_keystrings(
 	unsigned char *ciphertext_buffer,
 	size_t ciphertext_size,
 	char **keystrings,
@@ -68,7 +68,7 @@ main(int ac, char **av)
 			allowable_non_printable_percent = strtol(optarg, NULL, 10);
 			break;
 		case 'N':
-			max_key_length = strtol(optarg, NULL, 10);
+			max_key_length = strtol(optarg, NULL, 10) + 1;
 			break;
 		case 'n':
 			min_key_length = strtol(optarg, NULL, 10);
@@ -102,29 +102,18 @@ main(int ac, char **av)
 void
 find_keys(unsigned char *ciphertext_buffer, size_t ciphertext_size, int min_key_length, int max_key_length)
 {
-	double min_angle = 10.00;
-	int best_keylength = -1;
-
 	for (int keylength = min_key_length; keylength < max_key_length; ++keylength)
 	{
-		double angle = find_key(ciphertext_buffer, ciphertext_size, keylength);
-		if (angle < min_angle)
-		{
-			min_angle = angle;
-			best_keylength = keylength;
-		}
+		find_key(ciphertext_buffer, ciphertext_size, keylength);
 	}
-
-	printf("Best key length: %d\n", best_keylength);
 }
 
-double
+void
 find_key(unsigned char *ciphertext_buffer, size_t ciphertext_size, int keylength)
 {
 	char **byte_buckets = malloc(sizeof(char *)*keylength);
 	int bytes_per_bucket = ciphertext_size/keylength + 1; // Integer division rounding.
 	int *bucket_count = calloc(sizeof(int), keylength);
-	double best_angle = 7.00;
 
 	for (int i = 0; i < keylength; ++i)
 		byte_buckets[i] = calloc(bytes_per_bucket, 1);
@@ -182,7 +171,7 @@ find_key(unsigned char *ciphertext_buffer, size_t ciphertext_size, int keylength
 
 			printf("Examining %d different key strings\n", M);
 
-			best_angle = iterate_keystrings(
+			iterate_keystrings(
 				ciphertext_buffer,
 				ciphertext_size,
 				keystrings,
@@ -224,8 +213,6 @@ find_key(unsigned char *ciphertext_buffer, size_t ciphertext_size, int keylength
 	}
 	free(byte_buckets);
 	byte_buckets = NULL;
-	
-	return best_angle;
 }
 
 /* Find likely key bytes for a buffer full of characters xored
@@ -394,7 +381,7 @@ fill_buffer(char *filename, size_t *size_out)
 	return ciphertext_buffer;
 }
 
-double
+void
 iterate_keystrings(
 	unsigned char *ciphertext_buffer,
 	size_t ciphertext_size,
@@ -434,8 +421,6 @@ iterate_keystrings(
 
 	free(keystring);
 	keystring = NULL;
-
-	return best_angle;
 }
 
 char *
