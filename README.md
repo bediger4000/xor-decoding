@@ -153,32 +153,65 @@ ciphertext in `puzzling.dat`.  The graph shows 3 outlier values for key length,
 
 ## Finding the key
 
-Program `findkeys` guesses possible keys by putting the ciphertext into _keysize_ number of buffers,
+Program `findkeys` guesses possible keys by putting the ciphertext into _keylength number of buffers,
 where the Nth ciphertext byte goes into buffer number `N%keylength`. Assuming a particular
 key length, all bytes that got xor-ed with a particular key byte M end up in buffer number M.
 
+Since each of the bufers is a collection of cleartext characters xored with the
+same key byte, `findkeys` tries every ASCII bytes from 0x20 to 0x7f to decode a
+buffer.  `findkeys` determines the three ASCII bytes that yield the least
+percentage of non-printing "cleartext" characters. It considers the "first best key"
+to be the concatentatoin of key bytes that yeild the lowest non-printable character
+count for each of the _keylength_ buffers.
 
 
-	$ make findkeys
-	$ ./findkeys -j 5 -n 8 -N 25 -i puzzling.dat
+    $ make findkeys
+    $ ./findkeys -j 5 -n 8 -N 24 -i puzzling.dat
+
     Read all 2625 bytes of cipher text from "puzzling.dat"
     Key length 8, first best key string "k"
-    Key length 8, best key string "k"
-    Key length 9, no good key string
-    Key length 10, no good key string
-    Key length 11, no good key string
     Key length 12, first best key string "SjJVkE6rkRYj"
-    Key length 12, best key string "N/J^kM1rmR]j"
-    Key length 13, no good key string
-    Key length 14, no good key string
-    Key length 15, no good key string
-    Key length 16, no good key string
-    Key length 17, no good key string
-    Key length 18, no good key string
-    Key length 19, no good key string
-    Key length 20, no good key string
-    Key length 21, no good key string
     Key length 22, first best key string "h"
-    Key length 22, best key string "h"
-    Key length 23, no good key string
-    Best key length: 12
+    Key length 24, first best key string "SjJVkE6rkRYjSjJVkM6rkRYj"
+
+The above command says to consider only key bytes that produce 5% or less
+unprintable characters, and try keys from 8 to 25 bytes in length. 8, 12 and 24
+byte keylengths produced the lowest Normalized Hamming Distance in the chart above.
+The 24-byte key string is just the 12-byte keystring repeated, so `findkeys` thinks
+that "SjJVkE6rkRYj" is the key string.
+
+I'm not sure why a keylength of 8 gets a low Normalized Hamming Distance, or why 24 gets
+a lower distance than 12.
+
+`findkeys` has a few more options to consider. 
+
+* `-I` flag causes it to iterate through all the high-probability key bytes at each key string index.
+* `-b` causes it to compare to Base64-encoded PHP cleartext, rather than straight-up PHP to find "good" key bytes.
+* `-x` causes it to compare to PHP represented with PHP's "\xNN" notation.
+
+Since PHP can be embedded in all kinds of bytes, the `-j` option has to be set to some non-zero
+value in most cases. I used 5 in the examples above, but your mileage may vary.
+
+## Decoding the ciphertext
+
+   $ make xor
+   $ ./xor puzzling.dat 'SjJVkE6rkRYj' | head
+    //adjust system variables
+    if(!@isset($_SERVER)){$_COOKIE=&$HTTP_COOKIE_VARS;$_POST=&$HTTP_POST_VARS;$_GET=&$HTTP_GET_VARS;}
+    //die with error
+    function x_die($m){@header('HTTP/1.1 500 '.$m);@die();}
+    //check if we can exec
+    define('has_passthru',@function_exists('passthru'));
+    define('has_system',@function_exists('system'));
+    define('has_shell_exec',@function_exists('shell_exec'));
+    define('has_popen',@function_exists('popen'));
+
+Looks like that's the key.
+
+It's actually interesting to google for "SjJVkE6rkRYj".
+
+You can use `xor` to encode as well as decode.
+
+	$ ./xor filename "somekey" > intermediate
+	$ ./xor intermediate "somekey" > final
+	$ diff filename final
