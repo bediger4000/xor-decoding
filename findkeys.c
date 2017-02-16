@@ -33,6 +33,7 @@ double *basis_vector;
 double basis_vector_magnitude;
 
 int allowable_non_printable_percent = 0;
+int iterate_all_possible_keys = 0;
 
 int
 main(int ac, char **av)
@@ -49,7 +50,7 @@ main(int ac, char **av)
 	basis_vector = php_vector;
 	basis_vector_magnitude = php_vector_magnitude;
 
-	while (EOF != (c = getopt(ac, av, "bi:j:N:n:px")))
+	while (EOF != (c = getopt(ac, av, "bi:Ij:N:n:px")))
 	{
 		switch (c)
 		{
@@ -59,6 +60,9 @@ main(int ac, char **av)
 			break;
 		case 'i':
 			filename =  optarg;
+			break;
+		case 'I':
+			iterate_all_possible_keys = 1;
 			break;
 		case 'j':
 			allowable_non_printable_percent = strtol(optarg, NULL, 10);
@@ -149,7 +153,7 @@ find_key(unsigned char *ciphertext_buffer, size_t ciphertext_size, int keylength
 	first_best_keystring[keylength] = '\0';
 
 	/* first_best_keystring should have a key string composed of the
-	 * individual bytes that bets decode each buket of ciphertext bytes.
+	 * individual bytes that best decode each bucket of ciphertext bytes.
 	 * It's probably, but not always, the actual key, if the key really
 	 * has keylength bytes in it. */
 
@@ -158,32 +162,45 @@ find_key(unsigned char *ciphertext_buffer, size_t ciphertext_size, int keylength
 	if (first_best_keystring[0])
 		printf("Key length %d, first best key string \"%s\"\n", keylength, escape_chars(first_best_keystring, escaped_string));
 
-	/* keystrings[] points to arrays of up to 3 bytes that at least
-	 * sort of decode to plaintext. See if we should check all those possibilities. */
-	int N = 0;
-	for (int i = 0; i < keylength; ++i)
-		N += strlen(keystrings[i]);
-
-	if (N > 0)
+	if (iterate_all_possible_keys)
 	{
-		char *best_keystring = calloc(keylength + 1, 1);
-		best_angle = iterate_keystrings(
-			ciphertext_buffer,
-			ciphertext_size,
-			keystrings,
-			keylength,
-			best_keystring
-		);
+		/* keystrings[] points to arrays of up to 3 bytes that at least
+		 * sort of decode to plaintext. See if we should check all those possibilities. */
+		int N = 0;
+		for (int i = 0; i < keylength; ++i)
+			N += strlen(keystrings[i]);
 
-		printf("	another possible key string \"%s\"\n",
-			escape_chars(best_keystring, escaped_string)
-		);
-		fflush(stdout);
+		if (N > keylength)
+		{
+			char *best_keystring = calloc(keylength + 1, 1);
+			int M = 1;
 
-		free(best_keystring);
-		best_keystring = NULL;
-	} else {
-		printf("Key length %d, no good key string with less than %d%% problme characters\n", keylength, allowable_non_printable_percent);
+			for (int i = 0; i < keylength; ++i)
+			{
+				M *= strlen(keystrings[i]);
+			}
+
+			printf("Examining %d different key strings\n", M);
+
+			best_angle = iterate_keystrings(
+				ciphertext_buffer,
+				ciphertext_size,
+				keystrings,
+				keylength,
+				best_keystring
+			);
+
+			printf("	another possible key string \"%s\"\n",
+				escape_chars(best_keystring, escaped_string)
+			);
+			fflush(stdout);
+
+			free(best_keystring);
+			best_keystring = NULL;
+		} else {
+			printf("Key length %d, no good key string with less than %d%% problem characters\n", keylength, allowable_non_printable_percent);
+		}
+
 	}
 
 	free(first_best_keystring);
@@ -466,6 +483,7 @@ usage(char *progname)
 					"-p  PHP source code basis vector (default)\n"
 					"-x  PHP '\\xnm' string rep basis vector\n"
 					"-i <inputfilename> specify the file name of xor-encoded ciphertext, no default\n"
+					"-I look at all likely keystrings, default off, can be time consuming\n"
 					"-j <number> allow <number> percent of non-printing characters when guessing key, default zero\n"
 					"-n <number> specify minimum key length to consider, default 2\n"
 					"-N <number> specify maximum key length to consider, default 30\n"
