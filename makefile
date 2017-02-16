@@ -33,6 +33,9 @@ findkeys: findkeys.c php_vector.h base64_vector.h xencode_vector.h chars_array.h
 chars_array.o:chars_array.c chars_array.h
 	$(CC) $(CFLAGS) -c chars_array.c
 
+test_chars_array: test_chars_array.c chars_array.o
+	$(CC) $(CFLAGS) -o test_chars_array test_chars_array.c chars_array.o
+
 xor: xor.c
 	$(CC) $(CFLAGS) -o xor xor.c
 
