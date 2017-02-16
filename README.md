@@ -160,7 +160,7 @@ key length, all bytes that got xor-ed with a particular key byte M end up in buf
 
 
 	$ make findkeys
-	$ ./findkeys -j 5 -n 8 -N 24 -i puzzling.dat
+	$ ./findkeys -j 5 -n 8 -N 25 -i puzzling.dat
     Read all 2625 bytes of cipher text from "puzzling.dat"
     Key length 8, first best key string "k"
     Key length 8, best key string "k"
