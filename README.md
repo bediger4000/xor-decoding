@@ -153,9 +153,32 @@ ciphertext in `puzzling.dat`.  The graph shows 3 outlier values for key length,
 
 ## Finding the key
 
+Program `findkeys` guesses possible keys by putting the ciphertext into _keysize_ number of buffers,
+where the Nth ciphertext byte goes into buffer number `N%keylength`. Assuming a particular
+key length, all bytes that got xor-ed with a particular key byte M end up in buffer number M.
+
+
+
 	$ make findkeys
 	$ ./findkeys -j 5 -n 8 -N 24 -i puzzling.dat
-
-Program `findkeys` guesses possible keys by putting the ciphertext into _keysize_ buffers,
-where the Nth ciphertext byte goes into buffer N%keylength. Assuming a particular
-key length, all bytes that got xor-ed with key byte M end up in buffer M.
+    Read all 2625 bytes of cipher text from "puzzling.dat"
+    Key length 8, first best key string "k"
+    Key length 8, best key string "k"
+    Key length 9, no good key string
+    Key length 10, no good key string
+    Key length 11, no good key string
+    Key length 12, first best key string "SjJVkE6rkRYj"
+    Key length 12, best key string "N/J^kM1rmR]j"
+    Key length 13, no good key string
+    Key length 14, no good key string
+    Key length 15, no good key string
+    Key length 16, no good key string
+    Key length 17, no good key string
+    Key length 18, no good key string
+    Key length 19, no good key string
+    Key length 20, no good key string
+    Key length 21, no good key string
+    Key length 22, first best key string "h"
+    Key length 22, best key string "h"
+    Key length 23, no good key string
+    Best key length: 12
