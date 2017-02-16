@@ -4,6 +4,12 @@
 
 #include <chars_array.h>
 
+/* Takes an array of pointers to arrays, each of those sub-arrays a nul-terminated string,
+ * and the number of subarrays. Converts to a struct chars_array, which allows iterating
+ * through all the strings that the sub-arrays can create together. Assumes that the
+ * a sub-array at position N has characters that should appear in the strings at
+ * index N.
+ */
 struct chars_array *
 convert_keybytes(char **array_of_arrays, int arylength)
 {
@@ -21,11 +27,18 @@ convert_keybytes(char **array_of_arrays, int arylength)
 	return r;
 }
 
+/* Increment to the next string. Careful: this struct handles a variable number of
+ * variable length arrays of chars, one array of chars for each index in the strings
+ * it iterates through.
+ * Return value is zero, as long as there's still unique strings left to iterate
+ * through. When all strings have been iterated, it returns 1 - it has "carried"
+ * to the next "digit", which doesn't exist.
+ */
 int
 increment(struct chars_array *ary, int arylength)
 {
 	int carry = 0;
-	int idx = arylength - 1;
+	int idx = arylength - 1; /* Least significant character */
 
 	do {
 		++ary[idx].current_byte;
@@ -43,7 +56,8 @@ increment(struct chars_array *ary, int arylength)
 	return carry;
 }
 
-void free_chars_array(struct chars_array *ary, int length)
+void
+free_chars_array(struct chars_array *ary, int length)
 {
 	for (int i = 0; i < length; ++i)
 	{

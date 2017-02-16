@@ -1,3 +1,10 @@
+/*
+ * This struct and associated functions allow you to
+ * iterate through possibly good keystrings of some
+ * fixed length. The number of possible bytes for a
+ * given index in the keystring varies, as does the
+ * length of the keystring.
+ */
 struct chars_array {
 	char *bytes;
 	int bytes_count;
