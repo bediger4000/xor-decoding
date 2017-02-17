@@ -7,8 +7,6 @@
 
 [Another analysis](https://blog.sucuri.net/2013/12/how-we-decoded-some-nasty-multi-level-encoded-malware.html)
 
-[Different malware, same encoding and key](http://pastebin.com/1XE208s6)
-
 During the summoer of 2014, I [wrote and ran](http://stratigery.com/phparasites/)
 a honey pot that emulated a poorly maintained WordPress 2.9 installation. I ended up
 including a simulated ["WSO" web shell](https://github.com/bediger4000/malware-phylogeny)
@@ -106,7 +104,7 @@ would be bitwise exclusively or-ed with the decoded bytes.
 Unfortunately, no attacker ever tried to access the "ku.php" code, so I did not
 have the text string key.
 
-## Getting the xor-encoded payload
+## Getting the XOR-encoded payload
 
 1. Extract the 12,941 character payload, which comprises the last line of file `95.211.231.143Uh3LiAoAAAMAAAEbNe0AAAAHfile`.
 2. Change `eval($d)` call to `print($d);` in that last line. This gives us the first intermediate code.
@@ -121,7 +119,7 @@ The file `makefile` documents how to do all those steps with a Linux shell.
 
 The program `keysize` finds likely key length(s) by calculating
 [Hamming Distance](https://en.wikipedia.org/wiki/Hamming_distance) of blocks of bytes in
-xor-encoded ciphertext. That is, `keysize` iterates through possible key lengths, from 2 to 30
+XOR-encoded ciphertext. That is, `keysize` iterates through possible key lengths, from 2 to 30
 characters. It calculates the Hamming Distance, the number of bits that differ, between the
 first chunk of bytes of key length, and every other key length-sized block of bytes in
 the ciphertext. For example, if we use 9 bytes as possible key length, `keysize` compares
@@ -146,18 +144,18 @@ The key length calculations aren't very demanding:
 
 ![Hamming Distance vs Key Length](https://raw.githubusercontent.com/bediger4000/xor-decoding/master/key_length.png)
 
-The above graph shows the result of running `keysize` over the xor-encoded
+The above graph shows the result of running `keysize` over the XOR-encoded
 ciphertext in `puzzling.dat`.  The graph shows 3 outlier values for key length,
 8, 12, and 24 bytes.
 
 
 ## Finding the key
 
-Program `findkeys` guesses possible keys by putting the ciphertext into _keylength number of buffers,
+Program `findkeys` guesses possible keys by putting the ciphertext into _keylength_ number of buffers,
 where the Nth ciphertext byte goes into buffer number `N%keylength`. Assuming a particular
-key length, all bytes that got xor-ed with a particular key byte M end up in buffer number M.
+key length, all bytes that got XOR-ed with a particular key byte M end up in buffer number M.
 
-Since each of the bufers is a collection of cleartext characters xored with the
+Since each of the bufers is a collection of cleartext characters XORed with the
 same key byte, `findkeys` tries every ASCII bytes from 0x20 to 0x7f to decode a
 buffer.  `findkeys` determines the three ASCII bytes that yield the least
 percentage of non-printing "cleartext" characters. It considers the "first best key"
@@ -194,24 +192,25 @@ value in most cases. I used 5 in the examples above, but your mileage may vary.
 
 ## Decoding the ciphertext
 
-   $ make xor
-   $ ./xor puzzling.dat 'SjJVkE6rkRYj' | head
-    //adjust system variables
-    if(!@isset($_SERVER)){$_COOKIE=&$HTTP_COOKIE_VARS;$_POST=&$HTTP_POST_VARS;$_GET=&$HTTP_GET_VARS;}
-    //die with error
-    function x_die($m){@header('HTTP/1.1 500 '.$m);@die();}
-    //check if we can exec
-    define('has_passthru',@function_exists('passthru'));
-    define('has_system',@function_exists('system'));
-    define('has_shell_exec',@function_exists('shell_exec'));
-    define('has_popen',@function_exists('popen'));
+    $ make xor
+    $ ./xor puzzling.dat 'SjJVkE6rkRYj' | head
+     //adjust system variables
+     if(!@isset($_SERVER)){$_COOKIE=&$HTTP_COOKIE_VARS;$_POST=&$HTTP_POST_VARS;$_GET=&$HTTP_GET_VARS;}
+     //die with error
+     function x_die($m){@header('HTTP/1.1 500 '.$m);@die();}
+     //check if we can exec
+     define('has_passthru',@function_exists('passthru'));
+     define('has_system',@function_exists('system'));
+     define('has_shell_exec',@function_exists('shell_exec'));
+     define('has_popen',@function_exists('popen'));
 
 Looks like that's the key.
 
-It's actually interesting to google for "SjJVkE6rkRYj".
+It's actually interesting to google for "SjJVkE6rkRYj". Apparently this is the "SuperFetchExec"
+malware.
 
 You can use `xor` to encode as well as decode.
 
-	$ ./xor filename "somekey" > intermediate
-	$ ./xor intermediate "somekey" > final
-	$ diff filename final
+    $ ./xor filename "somekey" > intermediate
+    $ ./xor intermediate "somekey" > final
+    $ diff filename final
