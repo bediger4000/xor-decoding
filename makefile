@@ -23,6 +23,9 @@ intermediate2.php: intermediate1.php
 puzzling.dat: intermediate2.php
 	php intermediate2.php > puzzling.dat
 
+plaintext: puzzling.dat xor
+	./xor puzzling.dat SjJVkE6rkRYj > plaintext
+
 # Build xor-decoding utilities
 keysize: keysize.c
 	$(CC) $(CFLAGS) -o keysize keysize.c
@@ -41,4 +44,4 @@ xor: xor.c
 
 clean:
 	-rm -rf puzzling.php puzzling.dat intermediate1.php intermediate2.php keysize
-	-rm -rf xor findkeys chars_array.o
+	-rm -rf xor findkeys chars_array.o plaintext test_chars_array
