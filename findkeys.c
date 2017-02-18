@@ -135,6 +135,31 @@ find_key(unsigned char *ciphertext_buffer, size_t ciphertext_size, int keylength
 
 	/* keystrings[] will have length keylength. keystrings[N] points to
 	 * an array of up to 3 "best" key bytes for each bucket of ciphertext bytes. */
+	int key_byte_count = 0;
+	for (int i = 0; i < keylength; ++i)
+	{
+		char *p = keystrings[i];
+		for (int j = 0; j < 3; ++j)
+			key_byte_count += p[j]? 1: 0;
+	}
+	if (key_byte_count >= keylength)
+	{
+		printf("Best key bytes for keylength %d\n", keylength);
+		for (int n = 0; n < 3; ++n)
+		{
+			char *hdr = "";
+			for (int i = 0; i < keylength; ++i)
+			{
+				char *p = keystrings[i];
+				if (p[n])
+					printf("%s%c", hdr, p[n]);
+				else
+					printf("%s ", hdr);
+				hdr = " ";
+			}
+			printf("\n");
+		}
+	}
 
 	char *first_best_keystring = calloc(keylength + 1, 1);
 	for (int i = 0; i < keylength; ++i)
@@ -153,20 +178,18 @@ find_key(unsigned char *ciphertext_buffer, size_t ciphertext_size, int keylength
 
 	if (iterate_all_possible_keys)
 	{
-		/* keystrings[] points to arrays of up to 3 bytes that at least
-		 * sort of decode to plaintext. See if we should check all those possibilities. */
-		int N = 0;
-		for (int i = 0; i < keylength; ++i)
-			N += strlen(keystrings[i]);
-
-		if (N > keylength)
+		if (key_byte_count > keylength)
 		{
 			char *best_keystring = calloc(keylength + 1, 1);
 			int M = 1;
 
 			for (int i = 0; i < keylength; ++i)
 			{
-				M *= strlen(keystrings[i]);
+				char *p = keystrings[i];
+				int strl = 0;
+				for (int j = 0; j < 3; ++j)
+					strl += p[j]? 1: 0;
+				if (strl) M *= strl;
 			}
 
 			printf("Examining %d different key strings\n", M);
@@ -394,7 +417,7 @@ iterate_keystrings(
 	char *keystring = calloc(keylength + 1, 1);
 	struct chars_array *keychars = convert_keybytes(keystrings, keylength);
 
-	while (1)
+	do
 	{
 		int vector[256];
 		for (int i = 0; i < 256; ++i) vector[i] = 0;
@@ -413,8 +436,7 @@ iterate_keystrings(
 			strcpy(keystring_out, keystring);
 		}
 
-		if (increment(keychars, keylength)) break;
-	}
+	} while (!increment(keychars, keylength));
 
 	free_chars_array(keychars, keylength);
 	keychars = NULL;
