@@ -25,6 +25,13 @@ void iterate_keystrings(
 	int keylength,
 	char *keystring_out
 );
+int *
+find_vector(
+	int ***vectors,
+	int keylength,
+	unsigned char *ciphertext_buffer, size_t ciphertext_size,
+	int key_idx, unsigned char key_byte
+);
 char *escape_chars(char *string, char *buffer);
 void usage(char *progname);
 
@@ -181,18 +188,18 @@ find_key(unsigned char *ciphertext_buffer, size_t ciphertext_size, int keylength
 		if (key_byte_count > keylength)
 		{
 			char *best_keystring = calloc(keylength + 1, 1);
-			int M = 1;
+			long M = 1;
 
 			for (int i = 0; i < keylength; ++i)
 			{
 				char *p = keystrings[i];
-				int strl = 0;
+				long strl = 0;
 				for (int j = 0; j < 3; ++j)
 					strl += p[j]? 1: 0;
 				if (strl) M *= strl;
 			}
 
-			printf("Examining %d different key strings\n", M);
+			printf("Examining %ld alternate key strings\n", M);
 
 			iterate_keystrings(
 				ciphertext_buffer,
@@ -416,6 +423,11 @@ iterate_keystrings(
 	double best_angle = 10.0;
 	char *keystring = calloc(keylength + 1, 1);
 	struct chars_array *keychars = convert_keybytes(keystrings, keylength);
+	int ***vectors;
+
+	vectors = calloc(sizeof(*vectors), keylength);
+	for (int i = 0; i < keylength; ++i)
+        vectors[i] = calloc(128, sizeof(**vectors));
 
 	do
 	{
@@ -425,8 +437,17 @@ iterate_keystrings(
 		for (int i = 0; i < keylength; ++i)
 			keystring[i] = keychars[i].bytes[keychars[i].current_byte];
 
-		for (unsigned int i = 0; i < ciphertext_size; ++i)
-			++vector[keystring[i%keylength]^ciphertext_buffer[i]];
+		for (int i = 0; i < keylength; ++i)
+		{
+			int *v = find_vector(
+				vectors, keylength,
+				ciphertext_buffer, ciphertext_size,
+				i, keystring[i]
+			);
+
+			for (int j = 0; j < 256; ++j)
+				vector[j] += v[j];
+		}
 
 		double angle = vector_angle(vector);
 
@@ -496,4 +517,34 @@ usage(char *progname)
 					"-N <number> specify maximum key length to consider, default 30\n"
 	);
 	exit(0);
+}
+/* More than 1 decent key byte value can exist for a particular
+ * offset in a key string. We memoize the 256-element "vectors"
+ * of cleartext byte values in this function. */
+int *
+find_vector(
+	int ***vectors,
+	int keylength,
+	unsigned char *ciphertext_buffer, size_t ciphertext_size,
+	int key_idx, unsigned char key_byte
+) {
+	int *p = vectors[key_idx][key_byte];
+
+	if (!p)
+	{
+		// Allocate and fill in a int vector[256] with character
+		// counts of all the cleartext bytes that would get XOR-ed with a
+		// particular key byte.
+		p = calloc(sizeof(*p), 256);
+
+		for (unsigned int i = 0; i < ciphertext_size; ++i)
+		{
+			if ((i%keylength) == (unsigned int)key_idx)
+				++p[key_byte^ciphertext_buffer[i]];
+		}
+		
+		vectors[key_idx][key_byte] = p;
+	}
+
+	return p;
 }
