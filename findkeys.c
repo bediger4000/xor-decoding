@@ -459,6 +459,22 @@ iterate_keystrings(
 
 	} while (!increment(keychars, keylength));
 
+	for (int i = 0; i < keylength; ++i)
+	{
+		for (int j = 0; j < 127; ++j)
+		{
+			if (vectors[i][j])
+			{
+				free(vectors[i][j]);
+				vectors[i][j] = NULL;
+			}
+		}
+        free(vectors[i]);
+        vectors[i] = NULL;
+	}
+	free(vectors);
+	vectors = NULL;
+
 	free_chars_array(keychars, keylength);
 	keychars = NULL;
 
