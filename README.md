@@ -7,7 +7,7 @@
 
 [Another analysis](https://blog.sucuri.net/2013/12/how-we-decoded-some-nasty-multi-level-encoded-malware.html)
 
-During the summoer of 2014, I [wrote and ran](http://stratigery.com/phparasites/)
+During the summer of 2014, I [wrote and ran](http://stratigery.com/phparasites/)
 a honey pot that emulated a poorly maintained WordPress 2.9 installation. I ended up
 including a simulated ["WSO" web shell](https://github.com/bediger4000/malware-phylogeny)
 as part of the honey pot, because attackers included WSO web shells in so many of
@@ -159,7 +159,7 @@ Since each of the bufers is a collection of cleartext characters XORed with the
 same key byte, `findkeys` tries every ASCII bytes from 0x20 to 0x7f to decode a
 buffer.  `findkeys` determines the three ASCII bytes that yield the least
 percentage of non-printing "cleartext" characters. It considers the "first best key"
-to be the concatentatoin of key bytes that yeild the lowest non-printable character
+to be the concatentation of key bytes that yeild the lowest non-printable character
 count for each of the _keylength_ buffers.
 
 
@@ -187,6 +187,11 @@ a lower distance than 12.
 * `-b` causes it to compare to Base64-encoded PHP cleartext, rather than straight-up PHP to find "good" key bytes.
 * `-x` causes it to compare to PHP represented with PHP's "\xNN" notation.
 
+I wasn't certain what the cleartext was. From `ku.php`, it looked like it was PHP, but sometimes
+malware gets obscured by using "\xNN" text format. Using `-b` or `-x` when getting a decent
+key for `puzzling.dat` gives you a wrong key, so the cleartext format does matter.
+
+
 Since PHP can be embedded in all kinds of bytes, the `-j` option has to be set to some non-zero
 value in most cases. I used 5 in the examples above, but your mileage may vary.
 
@@ -207,7 +212,8 @@ value in most cases. I used 5 in the examples above, but your mileage may vary.
 Looks like that's the key.
 
 It's actually interesting to google for "SjJVkE6rkRYj". Apparently this is the "SuperFetchExec"
-malware.
+malware, [an early reference](http://pastebin.com/z53aByWX) has it around sincd 2012, using
+the [same key](https://news.ycombinator.com/item?id=3433505).
 
 You can use `xor` to encode as well as decode.
 
