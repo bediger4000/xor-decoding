@@ -220,3 +220,8 @@ You can use `xor` to encode as well as decode.
     $ ./xor filename "somekey" > intermediate
     $ ./xor intermediate "somekey" > final
     $ diff filename final
+
+Using "-" as a filename causes `xor` to read from stdin,
+so you can use it in a pipleline:
+
+    $ base64 -d somefile | ./xor - "keykeykey" | base64 -d > clearext
