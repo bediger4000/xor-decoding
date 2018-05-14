@@ -1,7 +1,7 @@
 CC=cc
 CFLAGS = -g -Wall -Wextra -I. -lm
 
-all: puzzling.dat xor xor2 keysize findkeys
+all: puzzling.dat xor keysize findkeys
 
 # De-code the payload, which ends up in puzzling.dat
 puzzling.php: 95.211.231.143Uh3LiAoAAAMAAAEbNe0AAAAHfile
@@ -41,9 +41,6 @@ test_chars_array: test_chars_array.c chars_array.o
 
 xor: xor.c
 	$(CC) $(CFLAGS) -o xor xor.c
-
-xor2: xor2.c
-	$(CC) $(CFLAGS) -o xor2 xor2.c
 
 clean:
 	-rm -rf puzzling.php puzzling.dat intermediate1.php intermediate2.php keysize
