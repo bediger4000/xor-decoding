@@ -11,6 +11,7 @@
 #include <php_vector.h>
 #include <base64_vector.h>
 #include <xencode_vector.h>
+#include <english_vector.h>
 #include <chars_array.h>
 
 void find_keys(unsigned char *ciphertext_buffer, size_t ciphertext_size, int min_key_length, int max_key_length);
@@ -52,18 +53,22 @@ main(int ac, char **av)
 	size_t ciphertext_size;
 
 	int min_key_length = 2;
-	int max_key_length = 30;
+	int max_key_length = 4;
 
 	basis_vector = php_vector;
 	basis_vector_magnitude = php_vector_magnitude;
 
-	while (EOF != (c = getopt(ac, av, "bi:Ij:N:n:px")))
+	while (EOF != (c = getopt(ac, av, "bei:Ij:N:n:px")))
 	{
 		switch (c)
 		{
 		case 'b':
 			basis_vector = base64_vector;
 			basis_vector_magnitude = base64_vector_magnitude;
+			break;
+		case 'e':
+			basis_vector = english_vector;
+			basis_vector_magnitude = english_vector_magnitude;
 			break;
 		case 'i':
 			filename =  optarg;
@@ -524,6 +529,7 @@ usage(char *progname)
 	fprintf(stderr, "usage: %s [-b|-p|-x] -i inputfilename [-j <number>] -N <maxkeylength> -n <minkeylenght>\n", progname);
 	fprintf(stderr, "Flags:\n"
 					"-b  base64 encoding basis vector\n"
+					"-e  english ASCII character frequency basis vector\n"
 					"-p  PHP source code basis vector (default)\n"
 					"-x  PHP '\\xnm' string rep basis vector\n"
 					"-i <inputfilename> specify the file name of xor-encoded ciphertext, no default\n"
